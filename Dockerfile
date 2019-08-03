@@ -16,7 +16,7 @@ COPY ./src/ ./
 RUN go build -o apiserver
 
 # Expose port for service to be consumed
-EXPOSE 8000
+EXPOSE 80
 
 # Define entrypoint for container
 ENTRYPOINT ["./apiserver"]

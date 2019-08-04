@@ -1,10 +1,10 @@
 FROM golang:alpine
 
 # Add dependencies and create source directory
-RUN apk add --no-cache git         && \
-    go get github.com/gorilla/mux  && \
-    apk del git                    && \
-    mkdir -p $GOPATH/src/apiserver
+RUN apk add --no-cache git        
+RUN go get github.com/gorilla/mux  
+RUN apk del git                    
+RUN mkdir -p $GOPATH/src/apiserver
 
 # Set working directory
 WORKDIR $GOPATH/src/apiserver

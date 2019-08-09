@@ -1,10 +1,11 @@
+===================================================
+Starting Docker and Clean up old images & Container
+===================================================
+
 systemctl start docker 
 systemctl enable docker
 sudo setfacl -m u:ec2-user:rwx /var/run/docker.sock
- 
-
 docker rm -f $(docker ps -aq)
-
 docker rmi -f $(docker images -aq)
 
 ==============================

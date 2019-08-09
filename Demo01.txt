@@ -1,0 +1,90 @@
+systemctl start docker 
+systemctl enable docker
+sudo setfacl -m u:ec2-user:rwx /var/run/docker.sock
+ 
+
+docker rm -f $(docker ps -aq)
+
+docker rmi -f $(docker images -aq)
+
+==============================
+Running Read-only Container
+==============================
+
+
+
+docker run -it --read-only redis /bin/bash
+docker ps -a
+docker run -it --read-only alpine /bin/bash
+docker ps -a
+docker run -d --read-only -it --tmpfs /var/tmp alpine touch /var/tmp/hi
+
+========================================
+Listing out file with SetUID and SetGID 
+========================================
+
+docker run debian:jessie find / -perm +6000 -type f -exec ls -ld {} \; 2> /dev/null
+docker run alpine find / -perm +6000 -type f -exec ls -ld {} \; 2> /dev/null
+
+==========================================
+Running docker with reduce capabilities 
+==========================================
+
+docker run -d --name cap_test01 nginx
+
+docker container top  cap_test01 -eo pid
+
+pscap | grep $(docker container top  cap_test01 |grep master | awk '{print $2}')
+
+curl http://$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' cap_test01)
+
+
+docker run -d --cap-drop ALL --name cap_test02 nginx
+
+docker container top  cap_test02
+
+docker run -d --cap-drop ALL --cap-add=net_bind_service --cap-add=chown --cap-add=dac_override  --cap-add=setgid --cap-add=setuid --name  cap_test03  nginx
+
+pscap | grep $(docker container top  cap_test03 |grep master | awk '{print $2}')
+
+curl http://$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' cap_test03)
+
+================================================================
+Running Container with seccomp profiles [ Limiting systemcalls ]
+================================================================
+
+
+cd /home/ec2-user/DEMO/labs/security/seccomp/seccomp-profiles
+
+docker run -it centos /bin/bash
+
+docker run -it --security-opt seccomp=default-no-chmod.json centos /bin/bash
+
+
+==========================
+
+Running container with  
+
+
+cd /home/ec2-user/DEMO/demo01
+
+
+docker image build -t apiserver:buggy . -f Dockerfile.buggy
+docker container run -itd --name apiserver -p 8000:8000 apiserver:buggy
+curl -s -v -X POST -H 'Content-Type: application/json' -d '{"name":"india", "capital": "delhi", "continent": "asia"}' localhost:8000/api/v1/countries
+curl -s -v localhost:8000/api/v1/countries/india | jq '.'
+docker container exec -it apiserver ps
+docker container top apiserver -eo user,pid,ppid,comm
+docker container rm -f apiserver
+
+docker image build -t apiserver:fixed . -f Dockerfile.fixed
+docker container run -itd --name apiserver -p 8000:8000 --cap-drop ALL apiserver:fixed
+curl -s -v -X POST -H 'Content-Type: application/json' -d '{"name":"india", "capital": "delhi", "continent": "asia"}' localhost:8000/api/v1/countries
+curl -s -v localhost:8000/api/v1/countries/india | jq '.'
+docker container exec -it apiserver ps
+docker container top apiserver -eo user,pid,ppid,comm
+docker container rm -f apiserver
+
+
+docker image ls --format 'table {{.Repository}}\t{{.Tag}}\t{{.Size}}' apiserver:buggy
+docker image ls --format 'table {{.Repository}}\t{{.Tag}}\t{{.Size}}' apiserver:fixed

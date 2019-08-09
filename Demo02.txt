@@ -1,0 +1,92 @@
+docker rm -f $(docker ps -aq)
+
+====================
+CGROUP Memory Cap
+====================
+
+docker run -d --name MB100 --memory 100m alpine top
+
+docker stats --no-stream
+
+================
+CGROUP CPU CAP
+================
+
+docker run -d --name CPU_768 --cpuset-cpus 0 --cpu-shares 768 retheshnair/stress
+
+docker run -d --name CPU_256 --cpuset-cpus 0 --cpu-shares 256 retheshnair/stress
+
+docker stats --no-stream
+
+=========================
+User NameSpace Isolation
+=========================
+
+systemctl start docker
+
+docker run --rm -v /tmp:/root/tmp -it ubuntu
+
+ls -la /root/tmp
+
+touch /root/tmp/hi
+
+rm /root/tmp/hi
+
+
+[root@ip-172-31-10-229 ~]# cat /etc/subuid
+testuser:231072:65536
+
+[root@ip-172-31-10-229 ~]#  cat /etc/subgid
+testuser:231072:65536
+
+dockerd --userns-remap="testuser:testuser" &
+
+docker info | grep Root
+
+
+ls -al /var/lib/docker/
+
+docker run --rm -v /tmp:/root/tmp -it ubuntu
+
+killall dockerd -v
+
+docker rm -f $(docker ps -aq)
+
+docker rmi $(docker images -q)
+
+==========================
+network namespace isolated 
+==========================
+
+docker run -it alpine ip addr show
+
+==================================
+network namespace shared with Host 
+=====================================
+
+docker run -it --net=host alpine ip addr show
+
+============================
+
+Pid namespace isolated
+=========================== 
+
+docker run -it alpine ps aux
+
+================================
+
+pid namespace shared with Host 
+=================================
+
+docker run -it --pid=host alpine ps aux
+
+=========================================
+
+network namespace shared with another container
+===============================================
+
+docker run -d --name http nginx:alpine
+
+docker run --net=container:http retheshnair/curl curl -s localhost
+
+docker run --net=container:http retheshnair/curl curl -s localhost

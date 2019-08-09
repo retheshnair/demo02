@@ -55,12 +55,22 @@ Running Container with seccomp profiles [ Limiting systemcalls ]
 ================================================================
 
 
-cd /home/ec2-user/DEMO/labs/security/seccomp/seccomp-profiles
+git clone https://github.com/docker/labs
+
+cd labs/security/seccomp/seccomp-profiles
 
 docker run -it centos /bin/bash
 
+touch /tmp/hi 
+chmod 777 /tmp/hi
+ls -al  /tmp/hi
+
+
 docker run -it --security-opt seccomp=default-no-chmod.json centos /bin/bash
 
+touch /tmp/hi 
+chmod 777 /tmp/hi
+ls -al  /tmp/hi
 
 =============================================
 Running container with DockerFile with issues

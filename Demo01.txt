@@ -61,12 +61,12 @@ docker run -it centos /bin/bash
 docker run -it --security-opt seccomp=default-no-chmod.json centos /bin/bash
 
 
-==========================
+=============================================
+Running container with DockerFile with issues
+==============================================
 
-Running container with  
 
-
-cd /home/ec2-user/DEMO/demo01
+git clone https://github.com/retheshnair/demo01.git
 
 
 docker image build -t apiserver:buggy . -f Dockerfile.buggy
@@ -76,6 +76,10 @@ curl -s -v localhost:8000/api/v1/countries/india | jq '.'
 docker container exec -it apiserver ps
 docker container top apiserver -eo user,pid,ppid,comm
 docker container rm -f apiserver
+
+=============================================================
+Running container with DockerFile with Fixed and minimal size
+=============================================================
 
 docker image build -t apiserver:fixed . -f Dockerfile.fixed
 docker container run -itd --name apiserver -p 8000:8000 --cap-drop ALL apiserver:fixed
